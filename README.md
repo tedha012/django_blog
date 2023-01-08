@@ -1,1 +1,1 @@
-# djanngo_blog
+# make a django_blog project
