@@ -7,6 +7,25 @@ class TestView(TestCase):
     def setUp(self):
         self.client = Client()
 
+    def navbar_test(self, soup):
+        # 1.4 내비게이션 바가 있다.
+        navbar = soup.nav
+        # 1.5 Blog, About me라는 문구가 내비게이션 바에 있다.
+        self.assertIn("Blog", navbar.text)
+        self.assertIn("About Me", navbar.text)
+
+        logo_btn = navbar.find("a", text="Do It Django")
+        self.assertEqual(logo_btn.attrs["href"], "/")
+
+        home_btn = navbar.find("a", text="Home")
+        self.assertEqual(home_btn.attrs["href"], "/")
+
+        blog_btn = navbar.find("a", text="Blog")
+        self.assertEqual(blog_btn.attrs["href"], "/blog/")
+
+        about_me_btn = navbar.find("a", text="About Me")
+        self.assertEqual(about_me_btn.attrs["href"], "/about_me/")
+
     def test_post_list(self):
         # 1.1 포스트 목록 페이지를 가져온다
         response = self.client.get("/blog/")
@@ -14,12 +33,8 @@ class TestView(TestCase):
         self.assertEqual(response.status_code, 200)
         # 1.3 페이지 타이틀은 'Blog'이다.
         soup = BeautifulSoup(response.content, "html.parser")
-        self.assertEqual(soup.title.text, "Blog")
-        # 1.4 내비게이션 바가 있다.
-        navbar = soup.nav
-        # 1.5 Blog, About me라는 문구가 내비게이션 바에 있다.
-        self.assertIn("Blog", navbar.text)
-        self.assertIn("About Me", navbar.text)
+        self.assertEqual(soup.title.text, "\n      Blog\n    ")
+        self.navbar_test(soup)
 
         # 2.1 메인 영역에 게시물이 하나도 없다면
         self.assertEqual(Post.objects.count(), 0)
@@ -62,10 +77,7 @@ class TestView(TestCase):
         self.assertEqual(response.status_code, 200)
         soup = BeautifulSoup(response.content, "html.parser")
 
-        # 1.2  post_list 페이지와 똑같은 네비게이션 바가 있다.
-        navbar = soup.nav  # beautifulsoup를 이용하면 간단히 페이지의 태그 요소에 접근이 가능합니다.
-        self.assertIn("Blog", navbar.text)
-        self.assertIn("About Me", navbar.text)
+        self.navbar_test(soup)
 
         # 1.3  첫 번째 post의 title이 브라우저 탭에 표기되는 페이지 title에 있다.
         self.assertIn(post_001.title, soup.title.text)
